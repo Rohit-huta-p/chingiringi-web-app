@@ -85,8 +85,8 @@ export const OTPVerificationScreen = ({ navigation, route }: any) => {
             keyboardType="number-pad"
             maxLength={1}
             value={digit}
-            onChangeText={(v) => handleOtpChange(v, index)}
-            onKeyPress={(e) => handleKeyPress(e, index)}
+            onChangeText={(v: string) => handleOtpChange(v, index)}
+            onKeyPress={(e: any) => handleKeyPress(e, index)}
           />
         ))}
       </View>

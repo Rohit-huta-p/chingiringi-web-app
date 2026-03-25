@@ -1,32 +1,34 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
-import { Colors } from '../constants/theme';
-// import { Ionicons } from '@expo/vector-icons'; // Assuming Expo vector icons
+import { Colors, Spacing } from '../constants/theme';
+import { useUIStore } from '../store/uiStore';
 
 const NavItem = ({ 
   label, 
   iconName, 
   isActive, 
-  onPress 
+  onPress,
+  isCollapsed
 }: { 
   label: string; 
   iconName: string; 
   isActive: boolean; 
   onPress: () => void;
+  isCollapsed?: boolean;
 }) => (
   <TouchableOpacity 
-    style={[styles.navItem, isActive && styles.navItemActive]} 
+    style={[styles.navItem, isActive && styles.navItemActive, isCollapsed && styles.navItemCollapsed]} 
     onPress={onPress}
   >
-    {/* <Ionicons name={iconName as any} size={20} color={isActive ? Colors.primary : Colors.textSecondary} /> */}
-    <View style={[styles.iconPlaceholder, { backgroundColor: isActive ? Colors.primary : Colors.textSecondary }]} />
-    <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{label}</Text>
+    <View style={[styles.iconPlaceholder, { backgroundColor: isActive ? Colors.primary : Colors.textSecondary }, isCollapsed && styles.iconPlaceholderCollapsed]} />
+    {!isCollapsed && <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{label}</Text>}
   </TouchableOpacity>
 );
 
 export const Sidebar: React.FC<DrawerContentComponentProps> = (props) => {
   const currentRouteName = props.state.routeNames[props.state.index];
+  const { isSidebarCollapsed, toggleSidebar } = useUIStore();
 
   const navigateTo = (screen: string) => {
     props.navigation.navigate(screen);
@@ -34,10 +36,13 @@ export const Sidebar: React.FC<DrawerContentComponentProps> = (props) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Text style={styles.logoText}>Chingi<Text style={{fontWeight: '100'}}>Ringi</Text></Text>
-        <TouchableOpacity style={styles.collapseBtn}>
-          <View style={styles.circleArrow} />
+      <View style={[styles.logoContainer, isSidebarCollapsed && styles.logoContainerCollapsed]}>
+        {!isSidebarCollapsed && <Text style={styles.logoText}>Chingi<Text style={{fontWeight: '100'}}>Ringi</Text></Text>}
+        <TouchableOpacity style={styles.collapseBtn} onPress={toggleSidebar}>
+          {/* Arrow visual representation depending on state */}
+          <Text style={{ color: Colors.textSecondary, fontSize: 18, fontWeight: 'bold' }}>
+            {isSidebarCollapsed ? '>' : '<'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -45,20 +50,23 @@ export const Sidebar: React.FC<DrawerContentComponentProps> = (props) => {
         <NavItem 
           label="Discover" 
           iconName="compass-outline" 
-          isActive={currentRouteName === 'Discover'} 
-          onPress={() => navigateTo('Discover')} 
+          isActive={currentRouteName === 'Home'} // Changed to Home to match drawer routes
+          onPress={() => navigateTo('Home')} 
+          isCollapsed={isSidebarCollapsed}
         />
         <NavItem 
           label="Wallet" 
           iconName="wallet-outline" 
           isActive={currentRouteName === 'Wallet'} 
           onPress={() => navigateTo('Wallet')} 
+          isCollapsed={isSidebarCollapsed}
         />
         <NavItem 
           label="Referrals" 
           iconName="people-outline" 
           isActive={currentRouteName === 'Referrals'} 
           onPress={() => navigateTo('Referrals')} 
+          isCollapsed={isSidebarCollapsed}
         />
       </View>
 
@@ -68,20 +76,24 @@ export const Sidebar: React.FC<DrawerContentComponentProps> = (props) => {
           iconName="notifications-outline" 
           isActive={currentRouteName === 'Notifications'} 
           onPress={() => navigateTo('Notifications')} 
+          isCollapsed={isSidebarCollapsed}
         />
         <NavItem 
           label="Settings" 
           iconName="settings-outline" 
           isActive={currentRouteName === 'Settings'} 
           onPress={() => navigateTo('Settings')} 
+          isCollapsed={isSidebarCollapsed}
         />
         
-        <View style={styles.profileSection}>
-          <View style={styles.avatarPlaceholder} />
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Dev Chavan</Text>
-            <Text style={styles.profileBalance}>₹1250</Text>
-          </View>
+        <View style={[styles.profileSection, isSidebarCollapsed && styles.profileSectionCollapsed]}>
+          <View style={[styles.avatarPlaceholder, isSidebarCollapsed && styles.avatarPlaceholderCollapsed]} />
+          {!isSidebarCollapsed && (
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>Dev Chavan</Text>
+              <Text style={styles.profileBalance}>₹1250</Text>
+            </View>
+          )}
         </View>
       </View>
     </View>
@@ -104,6 +116,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     paddingHorizontal: 8,
   },
+  logoContainerCollapsed: {
+    justifyContent: 'center',
+    paddingHorizontal: 0,
+  },
   logoText: {
     fontSize: 22,
     fontWeight: '900',
@@ -111,13 +127,8 @@ const styles = StyleSheet.create({
   },
   collapseBtn: {
     padding: 4,
-  },
-  circleArrow: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   mainNav: {
     flex: 1,
@@ -131,6 +142,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
   },
+  navItemCollapsed: {
+    justifyContent: 'center',
+    paddingHorizontal: 0,
+  },
   navItemActive: {
     backgroundColor: Colors.primaryLight,
   },
@@ -139,6 +154,9 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 4,
     marginRight: 12,
+  },
+  iconPlaceholderCollapsed: {
+    marginRight: 0,
   },
   navLabel: {
     fontSize: 16,
@@ -158,12 +176,19 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 8,
   },
+  profileSectionCollapsed: {
+    justifyContent: 'center',
+    paddingHorizontal: 0,
+  },
   avatarPlaceholder: {
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: '#ccc',
     marginRight: 12,
+  },
+  avatarPlaceholderCollapsed: {
+    marginRight: 0,
   },
   profileInfo: {
     justifyContent: 'center',

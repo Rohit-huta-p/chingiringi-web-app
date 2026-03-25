@@ -3,37 +3,31 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '../constants/theme';
 import { Sidebar } from '../components/Sidebar';
 import { SettingsScreen } from '../screens/Dashboard/SettingsScreen';
+import { HomeScreen } from '../screens/Dashboard/HomeScreen';
+import { useUIStore } from '../store/uiStore';
 
 const Drawer = createDrawerNavigator();
 
-// Placeholder screens
-function HomeScreen() {
+function PlaceholderScreen() {
   return (
     <View style={styles.screen}>
-      <Text>Home Screen</Text>
+      <Text>Placeholder Screen</Text>
     </View>
   );
 }
 
-function WalletScreen() {
-  return (
-    <View style={styles.screen}>
-      <Text>Wallet Screen</Text>
-    </View>
-  );
-}
-
-// Custom Drawer component can be implemented here later to match exactly the sidebar design
 export default function DrawerNavigator() {
+  const isSidebarCollapsed = useUIStore((state) => state.isSidebarCollapsed);
+
   return (
     <Drawer.Navigator
-      initialRouteName="Wallet"
+      initialRouteName="Home"
       drawerContent={(props) => <Sidebar {...props} />}
       screenOptions={{
-        drawerType: 'permanent', // Keep sidebar always visible just like desktop
+        drawerType: 'permanent',
         headerShown: false,
         drawerStyle: {
-          width: 250,
+          width: isSidebarCollapsed ? 80 : 250,
           backgroundColor: Colors.surface,
           borderRightWidth: 1,
           borderRightColor: Colors.border,
@@ -41,7 +35,9 @@ export default function DrawerNavigator() {
       }}
     >
       <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Wallet" component={WalletScreen} />
+      <Drawer.Screen name="Wallet" component={PlaceholderScreen} />
+      <Drawer.Screen name="Referrals" component={PlaceholderScreen} />
+      <Drawer.Screen name="Notifications" component={PlaceholderScreen} />
       <Drawer.Screen name="Settings" component={SettingsScreen} />
     </Drawer.Navigator>
   );
